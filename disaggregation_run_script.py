@@ -67,7 +67,7 @@ for year in elections_of_interest.keys():
         total_votes = returns[(returns[returns_name_dict['date_col']]==elec_date)&(returns[returns_name_dict['contest_col']]==contest)&(returns[returns_name_dict['party_col']].isin(party_list))&(~returns[returns_name_dict['county_col']].isin(county_exclude))][[returns_name_dict['county_col'],returns_name_dict['id_col'],returns_name_dict['party_col'],returns_name_dict['vote_col']]].groupby([returns_name_dict['county_col'],returns_name_dict['id_col'],returns_name_dict['party_col']]).sum().reset_index()
         total_votes = total_votes.set_index([returns_name_dict['id_col'], returns_name_dict['county_col'],returns_name_dict['party_col']])[returns_name_dict['vote_col']].unstack().reset_index()
         prec_to_county_lookup = pd.Series(total_votes[[returns_name_dict['county_col'],returns_name_dict['id_col']]].drop_duplicates()[returns_name_dict['county_col']].values,index=total_votes[[returns_name_dict['county_col'],returns_name_dict['id_col']]].drop_duplicates()[returns_name_dict['id_col']]).to_dict()
-        
+        #mode sums
         for mode in mode_list+[day_of_label]:
             mode_votes = returns[(returns[returns_name_dict['date_col']]==elec_date)&(returns[returns_name_dict['contest_col']]==contest)&(returns[returns_name_dict['party_col']].isin(party_list))&(returns[returns_name_dict['mode_col']]==mode)][[returns_name_dict['county_col'],returns_name_dict['id_col'],returns_name_dict['party_col'],returns_name_dict['vote_col']]].groupby([returns_name_dict['county_col'],returns_name_dict['id_col'],returns_name_dict['party_col']]).sum().reset_index().rename(columns = {returns_name_dict['vote_col']:mode})
             mode_votes = mode_votes.set_index([returns_name_dict['id_col'], returns_name_dict['county_col'],returns_name_dict['party_col']])[mode].unstack().reset_index().rename(columns = {party:party+'_'+mode for party in party_list})
@@ -111,7 +111,7 @@ for year in elections_of_interest.keys():
                     total_votes[party+'_'+mode+'_'+strategy] = total_votes[returns_name_dict['id_col']].map(count_estimates).fillna(0)
 
         
-
+        #calculate fitness scores for each strategy for total party votes in each precicnt
         for party in party_list:
             pred_dict = {}
             for strategy in strategies:
@@ -144,6 +144,7 @@ for year in elections_of_interest.keys():
                 partisan_mean_abs_pct_error = mean_absolute_percentage_error(partisan_target, partisan_pred)
                 strategy_scores.append([state,year,contest,party,'party',strategy,pct_r2,pct_rmse,pct_mean_abs_error,pct_median_abs_error,pct_mean_abs_pct_error,counts_r2,counts_rmse,counts_mean_abs_error,counts_median_abs_error,counts_mean_abs_pct_error,partisan_r2,partisan_rmse,partisan_mean_abs_error,partisan_median_abs_error,partisan_mean_abs_pct_error])
 
+                #calculate fitness scores for each strategy for party votes by-mode in each precicnt
                 for mode in mode_list:
                     mode_run_name = '_'.join([str(x) for x in [state,year,contest,party,mode,strategy]])
                     pared_votes = total_votes.copy().fillna(0)
@@ -172,6 +173,7 @@ for year in elections_of_interest.keys():
                     partisan_mean_abs_pct_error = mean_absolute_percentage_error(partisan_target, partisan_pred)
                     strategy_scores.append([state,year,contest,party,mode,strategy,pct_r2,pct_rmse,pct_mean_abs_error,pct_median_abs_error,pct_mean_abs_pct_error,counts_r2,counts_rmse,counts_mean_abs_error,counts_median_abs_error,counts_mean_abs_pct_error,partisan_r2,partisan_rmse,partisan_mean_abs_error,partisan_median_abs_error,partisan_mean_abs_pct_error])
 
+        #NC 2020 district re-aggregation
         total_votes.to_csv(data_dir+'_'.join([state,str(year),contest])+'_est_votes.csv', index=False)
         if state == 'NC' and year == 2020:
             prec = returns[(returns[returns_name_dict['date_col']]==elec_date)][[returns_name_dict['id_col'],NC_2020_dist_col,NC_2020_dist_cov_col]].drop_duplicates()
@@ -180,7 +182,7 @@ for year in elections_of_interest.keys():
             dist_votes = total_votes.groupby([NC_2020_dist_col,NC_2020_dist_cov_col]).sum().reset_index().drop([returns_name_dict['county_col']]+[party+'_county' for party in party_list], axis=1)
             dist_votes.to_csv(data_dir+'_'.join([state,str(year),contest])+'_est_dist_votes.csv', index=False)
 
-
+#write scores to csv
 if record_error_scores:
     with open(data_dir+state+'_scores.csv', 'w', newline='') as f:
         writer = csv.writer(f)
