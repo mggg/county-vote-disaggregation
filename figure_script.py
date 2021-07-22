@@ -8,11 +8,12 @@ from figure_helper import *
 figs_dir = "./figs/"
 os.makedirs(os.path.dirname(figs_dir), exist_ok=True)
 
+data_dir = './output_data_report/' # use './output_data/' if using generated data otherwise use './output_data_report/' to generate figures from the report
 
 #score heatmaps
 #read in file
-nc_scores_filepath = './output_data/NC_scores.csv'
-ok_scores_filepath = './output_data/OK_scores.csv'
+nc_scores_filepath = data_dir+'NC_scores.csv'
+ok_scores_filepath = data_dir+'OK_scores.csv'
 
 nc_scores = pd.read_csv(nc_scores_filepath)
 ok_scores = pd.read_csv(ok_scores_filepath)
@@ -44,7 +45,7 @@ for score_type in score_types:
 #district estimates table/heatmap
 #read in file
 
-nc_dist_est_filepath = './output_data/NC_2020_PRES_est_dist_votes.csv'
+nc_dist_est_filepath = data_dir+'NC_2020_PRES_est_dist_votes.csv'
 strategies = ['uniform', 'by_area', 'by_vap', 'by_cvap', 'by_totpop', 'by_day_of', 'by_voterfile_tot_votes', 'by_voterfile_mode', 'by_voterfile_party', 'by_voterfile_mode_party', 'by_voterfile_minus_day_of']
 nc_dist_ests = pd.read_csv(nc_dist_est_filepath)
 nc_dist_ests['NC_House_dist2020'] = nc_dist_ests['NC_House_dist2020'].astype('int').astype('str')
@@ -77,7 +78,7 @@ for party in parties:
 
 #Mecklenburg County MAPS
 shapefile_path = './data/NC_prec_2020'
-estimates_path = './output_data/NC_2020_PRES_est_votes.csv'
+estimates_path = data_dir+'NC_2020_PRES_est_votes.csv'
 estimates_df = pd.read_csv(estimates_path)
 shapefile = gpd.read_file(shapefile_path)
 
@@ -117,10 +118,7 @@ for suffix in ['', '_Absentee', '_Early', '_In Person']:
 
 
 
-
-
 #scatter plots and residual histograms
-
 strategy1 = 'by_day_of'
 strategy2 = 'by_voterfile_mode_party'
 party_list = ['DEM','REP']
