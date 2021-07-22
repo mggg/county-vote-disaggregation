@@ -17,7 +17,7 @@ os.makedirs(os.path.dirname(figs_dir), exist_ok=True)
 data_dir = "./output_data/"
 os.makedirs(os.path.dirname(data_dir), exist_ok=True)
 
-state = 'OK' #'NC' or 'OK'
+state = 'NC' #'NC' or 'OK'
 record_error_scores = True
 
 if state == 'OK':
